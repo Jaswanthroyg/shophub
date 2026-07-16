@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from .serializers import LoginSerializer, RegisterSerializer
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import IsAuthenticated
 
 class RegisterAPIView(APIView):
     def post(self, request):
@@ -27,8 +28,18 @@ class LoginAPIView(APIView):
             refresh = RefreshToken.for_user(user)
             access=refresh.access_token
             return Response({
-                "message":"login successful",
-                "refresh": str(refresh),
-                "access": str(access)},status=200
-            )
+               "refresh":str(refresh),
+               "access":str(access)
+           })
+            
         return Response(serializer.errors, status=400)
+    
+class ProfileAPIView(APIView):
+    permission_classes=[IsAuthenticated]
+    def get(self,request):
+     return Response({
+        "username":request.user.username,
+        "email":request.user.email,
+        "first_name":request.user.first_name,
+        "last_name":request.user.last_name},status=200
+                   )

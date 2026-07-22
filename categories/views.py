@@ -48,3 +48,12 @@ class CategoryDetailAPIView(APIView):
             serializer.save()
             return Response({ "message": "Category updated successfully", "data": serializer.data })
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    def delete(self,request,id):
+        category=get_object_or_404(Category,id=id)
+        category.delete()
+        return Response(
+    {
+        "message": "Category deleted successfully."
+    },
+    status=status.HTTP_200_OK
+)

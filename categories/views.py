@@ -1,3 +1,4 @@
+from django. shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -34,3 +35,9 @@ class CategoryAPIView(APIView):
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
         )
+class CategoryDetailAPIView(APIView):
+    def get(self,request,id):
+        category=get_object_or_404(Category,id=id)
+        serializer=CategorySerializer(category)
+        return Response(serializer.data)
+    

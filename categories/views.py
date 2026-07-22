@@ -41,3 +41,10 @@ class CategoryDetailAPIView(APIView):
         serializer=CategorySerializer(category)
         return Response(serializer.data)
     
+    def put(self,request,id):
+        category=get_object_or_404(Category,id=id)
+        serializer=CategorySerializer(instance=category,data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({ "message": "Category updated successfully", "data": serializer.data })
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)

@@ -5,7 +5,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 
 from .models import Cart
-from .serializers import AddToCartSerializer
+from .serializers import AddToCartSerializer,CartSerializer
 from products.models import Product
 
 
@@ -41,3 +41,15 @@ class AddToCartAPIView(APIView):
             },
             status=status.HTTP_200_OK
         )
+
+class CartListAPIView(APIView):
+
+    def get(self, request):
+
+        cart_items = cart_items = Cart.objects.filter(
+    user=request.user
+).select_related("product")
+
+        serializer = CartSerializer(cart_items, many=True)
+
+        return Response(serializer.data)

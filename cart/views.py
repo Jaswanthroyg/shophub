@@ -5,7 +5,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 
 from .models import Cart
-from .serializers import AddToCartSerializer,CartSerializer
+from .serializers import AddToCartSerializer,CartSerializer,UpdateCartSerializer
 from products.models import Product
 
 
@@ -53,3 +53,13 @@ class CartListAPIView(APIView):
         serializer = CartSerializer(cart_items, many=True)
 
         return Response(serializer.data)
+
+class UpdateCartAPIView(APIView):
+    def patch(self,request,pk):
+        serializer=UpdateCartSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        cart=get_object_or_404(Cart,id=pk,user=request.user)
+        Cart.quantity=serializer.validated_data["quantity"]
+        cart.save()
+        return Response({"message":"Cart Updated Successfully."},status=status.HTTP_200_OK)
+    

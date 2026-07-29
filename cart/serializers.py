@@ -28,3 +28,7 @@ class CartSerializer(serializers.ModelSerializer):
             "quantity"
         ]
 
+class UpdateCartSerializer(serializers.Serializer):
+
+    quantity = serializers.IntegerField(min_value=1)
+

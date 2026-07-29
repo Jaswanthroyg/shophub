@@ -63,3 +63,19 @@ class UpdateCartAPIView(APIView):
         cart.save()
         return Response({"message":"Cart Updated Successfully."},status=status.HTTP_200_OK)
     
+class RemoveCartAPIView(APIView):
+
+    def delete(self, request, pk):
+
+        cart = get_object_or_404(
+            Cart,
+            id=pk,
+            user=request.user
+        )
+
+        cart.delete()
+
+        return Response(
+            {"message": "Product removed from cart successfully."},
+            status=status.HTTP_200_OK
+        )

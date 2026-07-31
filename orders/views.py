@@ -4,12 +4,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated,IsAdminUser
 
 from cart.models import Cart
 from .models import Order, OrderItem
 from products.models import Product
-from .serializers import OrderListSerializer,OrderDetailSerializer
+from .serializers import OrderListSerializer,OrderDetailSerializer,OrderStatusUpdateSerializer
 
 
 class CheckoutAPIView(APIView):
@@ -118,3 +118,37 @@ class CancelOrderAPIView(APIView):
         return Response({
             "message":"Order Cancelled Successfully."
         },status=status.HTTP_200_OK)
+
+class OrderStatusUpdateAPIView(APIView):
+
+    permission_classes = [IsAdminUser]
+
+    def patch(self, request, pk):
+
+        order = get_object_or_404(
+            Order,
+            id=pk
+        )
+
+        serializer = OrderStatusUpdateSerializer(
+            order,
+            data=request.data,
+            partial=True
+        )
+
+        if serializer.is_valid():
+
+            serializer.save()
+
+            return Response(
+                {
+                    "message": "Order status updated successfully.",
+                    "data": serializer.data
+                },
+                status=status.HTTP_200_OK
+            )
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )

@@ -38,4 +38,8 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             "created_at",
             "items"
         ]
+class OrderStatusUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Order
+        fields=["status"]
     

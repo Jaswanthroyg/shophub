@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
 
 from cart.models import Cart
 from .models import Order, OrderItem
@@ -95,3 +96,25 @@ class OrderDetailView(APIView):
                                 )
         serializer=OrderDetailSerializer(order)
         return Response(serializer.data)
+
+class CancelOrderAPIView(APIView):
+    permission_classes=[IsAuthenticated]
+    def patch(self,request,pk):
+        order=get_object_or_404(
+            Order,
+            id=pk,
+            user=request.user
+        )
+        if order.status in [
+            "shipped",
+            "delivered",
+            "cancelled"
+        ]:
+            return Response({
+                "error":"This order can not be cancelled."
+            },status=status.HTTP_400_BAD_REQUEST)
+        order.status="cancelled"
+        order.save()
+        return Response({
+            "message":"Order Cancelled Successfully."
+        },status=status.HTTP_200_OK)

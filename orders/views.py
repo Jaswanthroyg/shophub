@@ -7,9 +7,17 @@ from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated,IsAdminUser
 
 from cart.models import Cart
+from payments.models import Payment
 from .models import Order, OrderItem
 from products.models import Product
 from .serializers import OrderListSerializer,OrderDetailSerializer,OrderStatusUpdateSerializer
+import razorpay
+from django.conf import settings
+
+
+Client=razorpay.Client(auth=(settings.RAZORPAY_KEY_ID,
+                             settings.RAZORPAY_KEY_SECRET
+                             ))
 
 
 class CheckoutAPIView(APIView):
@@ -20,9 +28,11 @@ class CheckoutAPIView(APIView):
             user=request.user
         ).select_related("product")
 
-        if not cart_items:
+        if not cart_items.exists():
             return Response(
-                {"message": "Cart is empty."},
+                {
+                    "message": "Cart is empty."
+                },
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -46,7 +56,7 @@ class CheckoutAPIView(APIView):
 
             total_amount = 0
 
-            # Step 3: Process each cart item
+            # Step 3: Create Order Items
             for cart_item in cart_items:
 
                 OrderItem.objects.create(
@@ -56,29 +66,42 @@ class CheckoutAPIView(APIView):
                     price=cart_item.product.price
                 )
 
-                Product.objects.filter(
-                    id=cart_item.product.id
-                ).update(
-                    stock=F("stock") - cart_item.quantity
-                )
-
                 total_amount += (
                     cart_item.product.price *
                     cart_item.quantity
                 )
 
+            # Step 4: Save Total Amount
             order.total_amount = total_amount
             order.save()
 
-            cart_items.delete()
+            # Step 5: Create Pending Payment
+            payment = Payment.objects.create(
+                order=order,
+                amount=order.total_amount
+            )
+            #step 6: create razorpay order
+            razorpay_order = Client.order.create(
+                {"amount": int(order.total_amount * 100),
+                 "currency": "INR",
+                 "receipt": f"order_{order.id}"
+                 })
+            #step 7: save razorpay order id
+            payment.gateway_order_id=razorpay_order["id"]
+            payment.save()
 
         return Response(
-            {
-                "message": "Order placed successfully."
-            },
-            status=status.HTTP_201_CREATED
-        )
-
+    {
+        "message": "Order created successfully. Please complete the payment.",
+        "order_id": order.id,
+        "payment_status": payment.status,
+        "amount": razorpay_order["amount"],
+        "currency": razorpay_order["currency"],
+        "razorpay_order_id": razorpay_order["id"],
+        "razorpay_key": settings.RAZORPAY_KEY_ID,
+    },
+    status=status.HTTP_201_CREATED
+)
 class OrderListAPIView(APIView):
     def get(self,request):
         orders=Order.objects.filter(

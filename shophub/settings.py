@@ -44,11 +44,13 @@ INSTALLED_APPS = [
     'cart',
     'orders',
     'payments',
+    'corsheaders',
     
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -135,3 +137,8 @@ REST_FRAMEWORK = {
 }
 RAZORPAY_KEY_ID = config("RAZORPAY_KEY_ID")
 RAZORPAY_KEY_SECRET = config("RAZORPAY_KEY_SECRET")
+
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:5500",
+]
+CORS_ALLOW_ALL_ORIGINS = True

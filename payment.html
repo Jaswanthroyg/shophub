@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>ShopHub Payment Test</title>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+
+<body>
+
+    <h2>ShopHub Razorpay Test</h2>
+
+    <button id="pay-btn">
+        Pay Now
+    </button>
+
+    <script>
+
+        document.getElementById("pay-btn").onclick = async function () {
+
+            // JWT Token
+            const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzg1ODQwMTYwLCJpYXQiOjE3ODU4Mzk4NjAsImp0aSI6IjRjM2E3ZDk0OTZlMjQ4NjRiYTQ4N2YzMmJmYjExZTlmIiwidXNlcl9pZCI6IjQifQ.-2QPhAwkjNo4Y5EpG4bkhmf3X6od70CBQmoW405O91M";
+
+            // Step 1: Checkout API
+            const checkoutResponse = await fetch(
+                "http://127.0.0.1:8000/api/orders/checkout/",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    }
+                }
+            );
+
+            const checkoutData = await checkoutResponse.json();
+
+            console.log(checkoutData);
+
+            // Step 2: Razorpay Options
+            var options = {
+
+                key: checkoutData.razorpay_key,
+
+                amount: checkoutData.amount,
+
+                currency: checkoutData.currency,
+
+                order_id: checkoutData.razorpay_order_id,
+
+                name: "ShopHub",
+
+                description: "Test Payment",
+
+                handler: async function (response) {
+
+                    console.log(response);
+
+                    // Step 3: Verify Payment
+                    const verifyResponse = await fetch(
+                        "http://127.0.0.1:8000/api/payments/verify/",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Authorization": `Bearer ${token}`
+                            },
+
+                            body: JSON.stringify({
+
+                                razorpay_order_id: response.razorpay_order_id,
+
+                                razorpay_payment_id: response.razorpay_payment_id,
+
+                                razorpay_signature: response.razorpay_signature
+
+                            })
+
+                        }
+                    );
+
+                    const verifyData = await verifyResponse.json();
+
+                    console.log(verifyData);
+
+                    alert(verifyData.message);
+
+                }
+
+            };
+
+            var rzp = new Razorpay(options);
+
+            rzp.open();
+
+        }
+
+    </script>
+
+</body>
+
+</html>

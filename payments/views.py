@@ -41,7 +41,16 @@ class PaymentVerifyAPIView(APIView):
             gateway_order_id=razorpay_order_id
         )
 
-        # Step 3: Verify Razorpay Signature
+        # Prevent duplicate verification
+        if payment.status == "Completed":
+            return Response(
+                {
+                    "message": "Payment already verified."
+                },
+                status=status.HTTP_200_OK
+            )
+
+        # Step 3: Verify Signature
         try:
 
             client.utility.verify_payment_signature(
@@ -61,27 +70,26 @@ class PaymentVerifyAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Step 4: Update Database
+        # Step 4: Fetch Payment Details from Razorpay
+        payment_details = client.payment.fetch(
+            razorpay_payment_id
+        )
+
+        # Step 5: Update Database
         with transaction.atomic():
 
             # Update Payment
             payment.gateway_payment_id = razorpay_payment_id
+            payment.payment_method = payment_details["method"].upper()
             payment.status = "Completed"
             payment.save()
-            if payment.status == "Completed":
-                return Response(
-                    {
-                        "message": "Payment already verified."
-                    },
-                    status=status.HTTP_200_OK
-                )
 
             # Update Order
             order = payment.order
             order.status = "Confirmed"
             order.save()
 
-            # Reduce Product Stock
+            # Reduce Stock
             order_items = OrderItem.objects.filter(
                 order=order
             ).select_related("product")
@@ -90,26 +98,34 @@ class PaymentVerifyAPIView(APIView):
 
                 product = item.product
 
+                # Check stock again
                 if item.quantity > product.stock:
 
                     return Response(
-                    {
-                        "message": f"Payment received, but '{product.name}' is out of stock. Refund is required."
-                    },
-                    status=status.HTTP_409_CONFLICT
+                        {
+                            "message": f"Payment received, but '{product.name}' is out of stock. Refund required."
+                        },
+                        status=status.HTTP_409_CONFLICT
+                    )
+
+                Product.objects.filter(
+                    id=product.id
+                ).update(
+                    stock=F("stock") - item.quantity
                 )
 
-            # Clear User Cart
+            # Clear Cart
             Cart.objects.filter(
                 user=order.user
             ).delete()
 
-        # Step 5: Success Response
+        # Step 6: Success Response
         return Response(
             {
                 "message": "Payment verified successfully.",
                 "order_id": order.id,
                 "payment_status": payment.status,
+                "payment_method": payment.payment_method,
                 "order_status": order.status
             },
             status=status.HTTP_200_OK

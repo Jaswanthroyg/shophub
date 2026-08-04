@@ -13,3 +13,9 @@ class PaymentSerializer(serializers.ModelSerializer):
             "gateway_payment_id",
             "created_at"
         ]
+class VerifyPaymentSerializer(serializers.Serializer):
+    razorpay_order_id=serializers.CharField()
+    razorpay_payment_id=serializers.CharField()
+    razorpay_signature=serializers.CharField()
+
+    

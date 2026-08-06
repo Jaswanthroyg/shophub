@@ -131,16 +131,29 @@ class AddressDetailAPIView(APIView):
         address = self.get_object(
             request.user,
             pk
-        )
+    )
+
+        was_default = address.is_default
 
         address.delete()
 
+        if was_default:
+
+             new_default = Address.objects.filter(
+            user=request.user
+        ).first()
+
+        if new_default:
+
+            new_default.is_default = True
+            new_default.save()
+
         return Response(
-            {
-                "message": "Address deleted successfully."
-            },
-            status=status.HTTP_200_OK
-        )
+        {
+            "message": "Address deleted successfully."
+        },
+        status=status.HTTP_200_OK
+    )
 
 class SetDefaultAddressAPIView(APIView):
 

@@ -24,14 +24,35 @@ class ProductCreateAPIView(APIView):
 class ProductListAPIView(APIView):
     def get(self,request):
         search=request.query_params.get("search")
+        brand=request.query_params.get("brand")
         products=Product.objects.all()
+        #search
         if search:
             products=products.filter(
                 Q(name__icontains=search)|
                 Q(description__icontains=search)
             )
+        #brand filter
+        if brand:
+            products=products.filter(
+                brand__iexact=brand
+            )
+        #price filter
+        min_price=request.query_params.get("min_price")
+        max_price=request.query_params.get("max_price")
+        if min_price:
+            products=products.filter(
+                price__gte=min_price
+            )
+        if max_price:
+            products=products.filter(
+                price__lte=max_price
+            )
         serializer=ProductSerializer(products,many=True)
-        return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+            )
 
 class ProductDetailAPIView(APIView):
     def get(self,request,id):

@@ -45,7 +45,27 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             "items"
         ]
 class OrderStatusUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model=Order
-        fields=["status"]
 
+    class Meta:
+        model = Order
+        fields = ["status"]
+
+    def validate_status(self, value):
+
+        current_status = self.instance.status
+
+        allowed_transitions = {
+            "Pending": ["Confirmed", "Cancelled"],
+            "Confirmed": ["Shipped", "Cancelled"],
+            "Shipped": ["Delivered"],
+            "Delivered": [],
+            "Cancelled": [],
+        }
+
+        if value not in allowed_transitions[current_status]:
+            raise serializers.ValidationError(
+                f"Cannot change order status from "
+                f"{current_status} to {value}."
+            )
+
+        return value

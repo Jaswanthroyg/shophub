@@ -17,12 +17,16 @@ class Address(models.Model):
         max_length=255,
         blank=True
     )
+    address_line_2=models.CharField(
+        max_length=255,
+        blank=True
+    )
 
     street=models.CharField(
         max_length=255
     )
 
-    area=models.CharField(
+    village=models.CharField(
         max_length=255
     )
 

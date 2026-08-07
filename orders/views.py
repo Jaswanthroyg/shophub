@@ -4,13 +4,16 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from rest_framework.permissions import IsAuthenticated,IsAdminUser
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 from cart.models import Cart
 from payments.models import Payment
-from .models import Order, OrderItem
+from .models import Order, OrderItem, OrderAddress
+from addresses.models import Address
 from products.models import Product
-from .serializers import OrderListSerializer,OrderDetailSerializer,OrderStatusUpdateSerializer
+from .serializers import (OrderListSerializer,
+                            OrderDetailSerializer,
+                            OrderStatusUpdateSerializer)
 import razorpay
 from django.conf import settings
 
@@ -23,6 +26,19 @@ Client=razorpay.Client(auth=(settings.RAZORPAY_KEY_ID,
 class CheckoutAPIView(APIView):
 
     def post(self, request):
+        address_id= request.data.get("address_id")
+        if not address_id:
+            return Response(
+                {
+                    "message":"please select the address before checkout."
+                    },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        address=get_object_or_404(
+            Address,
+            id=address_id,
+            user=request.user
+        )
 
         cart_items = Cart.objects.filter(
             user=request.user
@@ -56,7 +72,24 @@ class CheckoutAPIView(APIView):
 
             total_amount = 0
 
-            # Step 3: Create Order Items
+            # Step 3: Create Order Address Snapshot
+            OrderAddress.objects.create(
+                    order=order,
+                    full_name=address.full_name,
+                    phone_number=address.phone_number,
+                    address_line_1=address.address_line_1,
+                    address_line_2=address.address_line_2,
+                    street=address.street,
+                    landmark=address.landmark,
+                    village=address.village,
+                    city=address.city,
+                    district=address.district,
+                    state=address.state,
+                    pincode=address.pincode,
+                    country=address.country,
+                )
+
+            # Step 4: Create Order Items
             for cart_item in cart_items:
 
                 OrderItem.objects.create(
@@ -71,22 +104,22 @@ class CheckoutAPIView(APIView):
                     cart_item.quantity
                 )
 
-            # Step 4: Save Total Amount
+            # Step 5: Save Total Amount
             order.total_amount = total_amount
             order.save()
 
-            # Step 5: Create Pending Payment
+            # Step 6: Create Pending Payment
             payment = Payment.objects.create(
                 order=order,
                 amount=order.total_amount
             )
-            #step 6: create razorpay order
+            #step 7: create razorpay order
             razorpay_order = Client.order.create(
                 {"amount": int(order.total_amount * 100),
                  "currency": "INR",
                  "receipt": f"order_{order.id}"
                  })
-            #step 7: save razorpay order id
+            #step 8: save razorpay order id
             payment.gateway_order_id=razorpay_order["id"]
             payment.save()
 

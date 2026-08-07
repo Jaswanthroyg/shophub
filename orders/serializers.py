@@ -1,8 +1,15 @@
 from rest_framework import serializers
-from .models import Order,OrderItem
+from .models import Order,OrderItem,OrderAddress
 
+class OrderAddressSerializer(serializers.ModelSerializer):
 
+    class Meta:
+        model= OrderAddress
+        fields= "__all__"
 class OrderListSerializer(serializers.ModelSerializer):
+    delivery_address = OrderAddressSerializer(
+        read_only=True
+    )
 
     class Meta:
         model = Order
@@ -11,9 +18,9 @@ class OrderListSerializer(serializers.ModelSerializer):
             "id",
             "total_amount",
             "status",
-            "created_at"
+            "created_at",
+            "delivery_address"
         ]
-
 class OrderItemSerializer(serializers.ModelSerializer):
     product=serializers.CharField(
         source="product.name",
@@ -26,7 +33,6 @@ class OrderItemSerializer(serializers.ModelSerializer):
             "quantity",
             "price"
         ]
-
 class OrderDetailSerializer(serializers.ModelSerializer):
     items=OrderItemSerializer(many=True,read_only=True)
     class Meta:
@@ -42,4 +48,4 @@ class OrderStatusUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model=Order
         fields=["status"]
-    
+

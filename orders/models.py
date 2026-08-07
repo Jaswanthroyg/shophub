@@ -59,3 +59,31 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.product.name}"
+
+class OrderAddress(models.Model):
+    order=models.OneToOneField(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="delivery_address"
+    )
+    full_name=models.CharField(max_length=100)
+    phone_number=models.CharField(max_length=15)
+    address_line_1=models.CharField(max_length=255)
+    address_line_2=models.CharField(
+        max_length=255,
+        blank=True
+    )
+    street=models.CharField(max_length=255)
+    landmark=models.CharField(max_length=255,
+                              blank=True)
+    village=models.CharField(max_length=100)
+    city=models.CharField(max_length=100)
+    district=models.CharField(max_length=100)
+    state=models.CharField(max_length=100)
+    pincode=models.CharField(max_length=10)
+    country=models.CharField(
+        max_length=100,
+        default="India"
+    )
+    def __str__(self):
+        return f"Address for Order #{self.order.id}"

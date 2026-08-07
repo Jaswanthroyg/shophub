@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 
 from .models import Product
+from django.db.models import Q
 from .serializers import ProductSerializer
 from django.shortcuts import get_object_or_404
 
@@ -22,7 +23,13 @@ class ProductCreateAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 class ProductListAPIView(APIView):
     def get(self,request):
+        search=request.query_params.get("search")
         products=Product.objects.all()
+        if search:
+            products=products.filter(
+                Q(name__icontains=search)|
+                Q(description__icontains=search)
+            )
         serializer=ProductSerializer(products,many=True)
         return Response(serializer.data,status=status.HTTP_200_OK)
 

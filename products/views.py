@@ -6,6 +6,7 @@ from .models import Product
 from django.db.models import Q
 from .serializers import ProductSerializer
 from django.shortcuts import get_object_or_404
+from .pagination import ProductPagination
 
 
 class ProductCreateAPIView(APIView):
@@ -48,10 +49,18 @@ class ProductListAPIView(APIView):
             products=products.filter(
                 price__lte=max_price
             )
-        serializer=ProductSerializer(products,many=True)
-        return Response(
-            serializer.data,
-            status=status.HTTP_200_OK
+        #Pagination
+        paginator=ProductPagination()
+        page=paginator.paginate_queryset(
+            products,
+            request
+        )
+        serializer=ProductSerializer(
+            page,
+            many=True
+        )
+        return paginator.get_paginated_response(
+            serializer.data
             )
 
 class ProductDetailAPIView(APIView):

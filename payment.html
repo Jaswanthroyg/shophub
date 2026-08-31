@@ -1,105 +1,498 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-    <title>ShopHub Payment Test</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <title>ShopHub Payment</title>
+
+    <!-- Razorpay Checkout -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+            background: white;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin-bottom: 25px;
+        }
+
+        button {
+            background: #3399cc;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-size: 15px;
+        }
+    </style>
 </head>
 
 <body>
 
-    <h2>ShopHub Razorpay Test</h2>
+<div class="container">
+
+    <h1>ShopHub Razorpay Payment</h1>
 
     <button id="pay-btn">
         Pay Now
     </button>
 
-    <script>
+    <div id="status"></div>
 
-        document.getElementById("pay-btn").onclick = async function () {
+</div>
 
-            // JWT Token
-            const token = "";
 
-            // Step 1: Checkout API
+<script>
+
+    // =========================================================
+    // CONFIG
+    // =========================================================
+
+    const API_BASE_URL = "http://127.0.0.1:8000";
+
+    /*
+        IMPORTANT:
+        Replace this with your CURRENT access token.
+
+        Do NOT put your Razorpay secret here.
+        Only JWT access token goes here.
+    */
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzg2MzgxNzA5LCJpYXQiOjE3ODYzODE0MDksImp0aSI6ImZkZGZlZTFjNmIyNjRmNjY5NTQzYjExYjM4MTI3ZTJjIiwidXNlcl9pZCI6IjQifQ.ZQCwlrA0FXOVBvZ9aG_DuwT3aY2OmTMRXAfIkWyr8Xk";
+
+
+    // =========================================================
+    // ELEMENTS
+    // =========================================================
+
+    const payButton = document.getElementById("pay-btn");
+    const statusText = document.getElementById("status");
+
+
+    // =========================================================
+    // HELPER
+    // =========================================================
+
+    function setStatus(message) {
+        statusText.innerText = message;
+    }
+
+
+    // =========================================================
+    // GET DEFAULT ADDRESS
+    // =========================================================
+
+    async function getDefaultAddress() {
+
+        const response = await fetch(
+            `${API_BASE_URL}/api/addresses/`,
+            {
+                method: "GET",
+
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                }
+            }
+        );
+
+
+        const data = await response.json();
+
+        console.log("Addresses:", data);
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.detail ||
+                data.message ||
+                "Unable to fetch addresses."
+            );
+        }
+
+
+        /*
+            Your Address API returns a list.
+
+            We don't show the addresses to the user.
+
+            We simply find the default address.
+        */
+
+        const defaultAddress = data.find(
+            address => address.is_default === true
+        );
+
+
+        if (!defaultAddress) {
+
+            throw new Error(
+                "No default address found. Please create an address first."
+            );
+        }
+
+
+        console.log(
+            "Using default address:",
+            defaultAddress.id
+        );
+
+
+        return defaultAddress.id;
+    }
+
+
+
+    // =========================================================
+    // PAY NOW
+    // =========================================================
+
+    payButton.addEventListener("click", async function () {
+
+        try {
+
+            payButton.disabled = true;
+
+            setStatus("Preparing payment...");
+
+
+            // -------------------------------------------------
+            // STEP 1
+            // Get user's default address automatically
+            // -------------------------------------------------
+
+            const addressId = await getDefaultAddress();
+
+
+            console.log(
+                "Address ID:",
+                addressId
+            );
+
+
+            // -------------------------------------------------
+            // STEP 2
+            // Create Order + Razorpay Order
+            // -------------------------------------------------
+
+            setStatus("Creating order...");
+
+
             const checkoutResponse = await fetch(
-                "http://127.0.0.1:8000/api/orders/checkout/",
+                `${API_BASE_URL}/api/orders/checkout/`,
                 {
                     method: "POST",
 
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${token}`
-                    }
+                    },
+
+                    body: JSON.stringify({
+
+                        address_id: addressId
+
+                    })
                 }
             );
 
-            const checkoutData = await checkoutResponse.json();
 
-            console.log(checkoutData);
+            const checkoutData =
+                await checkoutResponse.json();
 
-            // Step 2: Razorpay Options
-            var options = {
+
+            console.log(
+                "Checkout response:",
+                checkoutData
+            );
+
+
+            if (!checkoutResponse.ok) {
+
+                throw new Error(
+                    checkoutData.message ||
+                    checkoutData.detail ||
+                    "Checkout failed."
+                );
+            }
+
+
+            // -------------------------------------------------
+            // STEP 3
+            // Make sure backend returned Razorpay details
+            // -------------------------------------------------
+
+            if (!checkoutData.razorpay_key) {
+
+                throw new Error(
+                    "Razorpay key was not returned by backend."
+                );
+            }
+
+
+            if (!checkoutData.razorpay_order_id) {
+
+                throw new Error(
+                    "Razorpay order ID was not returned by backend."
+                );
+            }
+
+
+            if (!checkoutData.amount) {
+
+                throw new Error(
+                    "Payment amount was not returned by backend."
+                );
+            }
+
+
+            console.log(
+                "Razorpay Key:",
+                checkoutData.razorpay_key
+            );
+
+            console.log(
+                "Razorpay Order ID:",
+                checkoutData.razorpay_order_id
+            );
+
+            console.log(
+                "Amount:",
+                checkoutData.amount
+            );
+
+
+            // -------------------------------------------------
+            // STEP 4
+            // Razorpay Checkout Options
+            // -------------------------------------------------
+
+            const options = {
+
+                // IMPORTANT:
+                // This comes from Django.
+                // DO NOT use YOUR_RAZORPAY_KEY_ID here.
 
                 key: checkoutData.razorpay_key,
 
                 amount: checkoutData.amount,
 
-                currency: checkoutData.currency,
+                currency: checkoutData.currency || "INR",
 
                 order_id: checkoutData.razorpay_order_id,
 
                 name: "ShopHub",
 
-                description: "Test Payment",
+                description: "ShopHub Order Payment",
+
 
                 handler: async function (response) {
 
-                    console.log(response);
-
-                    // Step 3: Verify Payment
-                    const verifyResponse = await fetch(
-                        "http://127.0.0.1:8000/api/payments/verify/",
-                        {
-                            method: "POST",
-
-                            headers: {
-                                "Content-Type": "application/json",
-                                "Authorization": `Bearer ${token}`
-                            },
-
-                            body: JSON.stringify({
-
-                                razorpay_order_id: response.razorpay_order_id,
-
-                                razorpay_payment_id: response.razorpay_payment_id,
-
-                                razorpay_signature: response.razorpay_signature
-
-                            })
-
-                        }
+                    console.log(
+                        "Razorpay payment response:",
+                        response
                     );
 
-                    const verifyData = await verifyResponse.json();
 
-                    console.log(verifyData);
+                    try {
 
-                    alert(verifyData.message);
+                        setStatus(
+                            "Payment received. Verifying..."
+                        );
+
+
+                        // -----------------------------------------
+                        // STEP 5
+                        // Verify payment on Django backend
+                        // -----------------------------------------
+
+                        const verifyResponse = await fetch(
+                            `${API_BASE_URL}/api/payments/verify/`,
+                            {
+                                method: "POST",
+
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "Authorization": `Bearer ${token}`
+                                },
+
+                                body: JSON.stringify({
+
+                                    razorpay_order_id:
+                                        response.razorpay_order_id,
+
+                                    razorpay_payment_id:
+                                        response.razorpay_payment_id,
+
+                                    razorpay_signature:
+                                        response.razorpay_signature
+
+                                })
+                            }
+                        );
+
+
+                        const verifyData =
+                            await verifyResponse.json();
+
+
+                        console.log(
+                            "Verification response:",
+                            verifyData
+                        );
+
+
+                        if (!verifyResponse.ok) {
+
+                            throw new Error(
+                                verifyData.message ||
+                                verifyData.detail ||
+                                "Payment verification failed."
+                            );
+                        }
+
+
+                        // -----------------------------------------
+                        // SUCCESS
+                        // -----------------------------------------
+
+                        setStatus(
+                            "Payment successful!"
+                        );
+
+
+                        alert(
+                            verifyData.message ||
+                            "Payment successful!"
+                        );
+
+
+                    } catch (error) {
+
+                        console.error(
+                            "Verification error:",
+                            error
+                        );
+
+
+                        setStatus(
+                            "Payment verification failed."
+                        );
+
+
+                        alert(
+                            "Payment was completed, but verification failed. Check the backend."
+                        );
+                    }
+
+                },
+
+
+                modal: {
+
+                    ondismiss: function () {
+
+                        setStatus(
+                            "Payment window closed."
+                        );
+
+                        payButton.disabled = false;
+
+                    }
 
                 }
 
             };
 
-            var rzp = new Razorpay(options);
 
-            rzp.open();
+            // -------------------------------------------------
+            // STEP 6
+            // Open Razorpay
+            // -------------------------------------------------
 
+            const razorpay =
+                new Razorpay(options);
+
+
+            razorpay.on(
+                "payment.failed",
+                function (response) {
+
+                    console.error(
+                        "Payment failed:",
+                        response.error
+                    );
+
+
+                    setStatus(
+                        "Payment failed."
+                    );
+
+
+                    alert(
+                        response.error.description ||
+                        "Payment failed."
+                    );
+
+
+                    payButton.disabled = false;
+                }
+            );
+
+
+            razorpay.open();
+
+
+        } catch (error) {
+
+            console.error(
+                "Checkout error:",
+                error
+            );
+
+
+            setStatus(
+                "Error: " + error.message
+            );
+
+
+            alert(
+                error.message
+            );
+
+
+            payButton.disabled = false;
         }
 
-    </script>
+    });
+
+</script>
 
 </body>
-
 </html>

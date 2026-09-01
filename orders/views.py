@@ -136,6 +136,7 @@ class CheckoutAPIView(APIView):
     status=status.HTTP_201_CREATED
 )
 class OrderListAPIView(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self,request):
         orders=Order.objects.filter(
             user=request.user

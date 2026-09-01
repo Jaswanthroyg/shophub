@@ -1,21 +1,30 @@
 # Python
+
 __pycache__/
 *.py[cod]
 *.pyo
 
 # Virtual Environment
+
 venv/
 
 # Database
+
 db.sqlite3
 
 # Environment Variables
+
 .env
 
 # VS Code
+
 .vscode/
 
 # OS Files
+
 .DS_Store
 Thumbs.db
-.env
+
+# Collected static files
+
+staticfiles/

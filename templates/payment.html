@@ -74,7 +74,7 @@
     // CONFIG
     // =========================================================
 
-    const API_BASE_URL = "http://127.0.0.1:8000";
+    const API_BASE_URL = "https://shophub-51ab.onrender.com";
 
     /*
         IMPORTANT:
@@ -83,7 +83,7 @@
         Do NOT put your Razorpay secret here.
         Only JWT access token goes here.
     */
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzg2MzgxNzA5LCJpYXQiOjE3ODYzODE0MDksImp0aSI6ImZkZGZlZTFjNmIyNjRmNjY5NTQzYjExYjM4MTI3ZTJjIiwidXNlcl9pZCI6IjQifQ.ZQCwlrA0FXOVBvZ9aG_DuwT3aY2OmTMRXAfIkWyr8Xk";
+    const token = localStorage.getItem("access_token");
 
 
     // =========================================================

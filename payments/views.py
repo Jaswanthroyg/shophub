@@ -1,11 +1,11 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import request, status
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.db import transaction
 from django.db.models import F
-
+from django.shortcuts import render
 from cart.models import Cart
 from products.models import Product
 from orders.models import OrderItem
@@ -21,7 +21,8 @@ client = razorpay.Client(
         settings.RAZORPAY_KEY_SECRET
     )
 )
-
+def payment_page(request):
+        return render(request, "payment.html")
 
 class PaymentVerifyAPIView(APIView):
 
@@ -130,3 +131,4 @@ class PaymentVerifyAPIView(APIView):
             },
             status=status.HTTP_200_OK
         )
+    

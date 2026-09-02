@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from payments.views import payment_page
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -33,4 +34,5 @@ urlpatterns = [
     path('api/payments/',include('payments.urls')),
     path('api/addresses/',include('addresses.urls')),
     path('api/wishlist/',include('wishlist.urls')),
+    path("payment/", payment_page, name="payment-page"),
 ]

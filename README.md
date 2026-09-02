@@ -1,484 +1,418 @@
-\# 🛒 ShopHub — E-Commerce Backend API
+# 🛒 ShopHub — E-Commerce Backend API
 
-ShopHub is a backend-focused E-Commerce application built using Django and Django REST Framework.
+ShopHub is a backend-focused E-Commerce REST API built with **Python, Django, and Django REST Framework**.
 
-The project provides REST APIs for user authentication, products, categories, cart, wishlist, address management, orders, and Razorpay payment processing.
+The application provides APIs for authentication, product and category management, cart, wishlist, address management, order processing, inventory management, and Razorpay payment integration.
 
-The application uses PostgreSQL as the database and JWT authentication for protected APIs.
+The project uses **PostgreSQL** for persistent data storage, **JWT authentication** for secured APIs, and **role-based access control** for customer and administrator operations.
 
+The application is deployed on **Render** and the payment workflow has been tested using Razorpay Test Mode.
 
-\## 🚀 Features
+---
 
-\### 🔐 Authentication
+## 🚀 Features
 
-\- User registration
+### 🔐 Authentication & Authorization
 
-\- User login
+- User registration
+- User login
+- JWT-based authentication
+- Access and refresh tokens
+- Protected API endpoints
+- User-specific resources
+- Role-based access control
+- Admin-only management operations
 
-\- JWT-based authentication
+### 👥 User Roles
 
-\- Protected APIs using authentication
+#### Customer
 
-\- User-specific resources
+Customers can:
 
+- Browse products
+- View categories
+- Search and filter products
+- Manage cart
+- Manage wishlist
+- Manage addresses
+- Checkout products
+- Make payments
+- View their own orders
+- View order details
+- Cancel eligible orders
 
-\### 📦 Products
+#### Administrator
 
-\- Product APIs
+Administrators can:
 
-\- Category-based products
+- Create products
+- Update products
+- Delete products
+- Create categories
+- Update categories
+- Delete categories
+- Manage order status
+- Access Django Admin Panel
 
-\- Product filtering
+Admin-only APIs are protected using Django REST Framework's permission system.
 
-\- Pagination
+---
 
-\- Product image support
+## 📦 Product Management
 
+- Product CRUD APIs
+- Category-based products
+- Product search
+- Brand filtering
+- Price range filtering
+- Pagination
+- Product image support
+- Admin-only product creation
+- Admin-only product updates
+- Admin-only product deletion
 
-\### 🗂️ Categories
+---
 
-\- Category management
+## 🗂️ Category Management
 
-\- Category image support
+- Category listing
+- Category detail
+- Category creation
+- Category updates
+- Category deletion
+- Admin-only category management
 
-\- Products organized by categories
+---
 
+## 🛒 Cart Management
 
-\### 🛒 Cart
+- Add products to cart
+- Update product quantity
+- Remove products from cart
+- View authenticated user's cart
+- User-specific cart data
 
-\- Add products to cart
+---
 
-\- Update product quantity
+## ❤️ Wishlist
 
-\- Remove products from cart
+- Add products to wishlist
+- Remove products from wishlist
+- View authenticated user's wishlist
+- User-specific wishlist data
 
-\- View authenticated user's cart
+---
 
-
-\### ❤️ Wishlist
-
-\- Add products to wishlist
-
-\- Remove products from wishlist
-
-\- View authenticated user's wishlist
-
-
-\### 📍 Address Management
-
-\- Create address
-
-\- View saved addresses
-
-\- Update address
-
-\- Partial address updates
-
-\- Delete address
-
-\- Set default address
-
-\- Automatically assign the first address as default
-
-
-\### 📋 Orders
-
-\- Checkout API
-
-\- Order creation
-
-\- Associate orders with addresses
-
-\- Track order status
-
-\- Track payment status
-
-\- Confirm orders after successful payment
-
-
-\### 💳 Razorpay Payment Integration
-
-\- Razorpay Test Mode integration
-
-\- Razorpay order creation
-
-\- Razorpay Checkout
-
-\- Payment processing
-
-\- Razorpay signature verification
-
-\- Payment status updates
-
-\- Order confirmation after successful payment
-
-
-\### 🗄️ Database
-
-\- PostgreSQL
-
-\- Django ORM
-
-\- Django migrations
-
-\- Environment-based database configuration
-
-
-\### 🔒 Security
-
-\- JWT authentication
-
-\- Protected APIs
-
-\- Environment variables for sensitive credentials
-
-\- Razorpay secret kept on backend
-
-\- Server-side payment signature verification
-
-\- `.env` excluded from Git
-
-
-\## 🛠️ Tech Stack
-
-| Technology | Purpose |
----------------------------
-| Python | Backend programming |
-
-| Django | Web framework |
-
-| Django REST Framework | REST API development |
-
-| PostgreSQL | Database |
-
-| JWT | Authentication |
-
-| Razorpay | Payment Gateway |
-
-| django-cors-headers | CORS handling |
-
-| Postman | API testing |
-
-| Git | Version control |
-
-| GitHub | Source code hosting |
-
-\---
-
-\## 🏗️ Project Structure
-
+## 📍 Address Management
+
+- Create address
+- View saved addresses
+- Update address
+- Partial address updates
+- Delete address
+- Set default address
+- Automatically assign the first address as default
+- User-specific address data
+
+---
+
+## 📋 Order Management
+
+- Checkout API
+- Order creation
+- Order item management
+- Order address snapshot
+- Order list API
+- Order detail API
+- Order status tracking
+- Order cancellation
+- Admin order status management
+- Payment status tracking
+- Stock validation during checkout
+- Inventory update after successful payment
+- Order confirmation after successful payment
+
+---
+
+## 💳 Razorpay Payment Integration
+
+ShopHub integrates Razorpay for payment processing.
+
+### Payment Flow
+
+- Create Razorpay order
+- Open Razorpay Checkout
+- Process payment
+- Receive payment response
+- Verify Razorpay payment signature
+- Update payment status
+- Confirm order
+- Reduce product stock
+- Clear cart after successful payment
+
+Razorpay Test Mode is used for development and demonstration.
+
+---
+
+## 🔒 Security
+
+- JWT authentication
+- Protected APIs
+- Role-based access control
+- Admin-only product management
+- Admin-only category management
+- Admin-only order status updates
+- User-specific resource access
+- Environment variables for sensitive configuration
+- Razorpay secret kept on the backend
+- Server-side Razorpay signature verification
+- `.env` excluded from Git
+- Database credentials excluded from source code
+
+---
+
+## 🗄️ Database
+
+ShopHub uses **PostgreSQL** as the primary database.
+
+Implemented using:
+
+- Django ORM
+- Django migrations
+- Foreign key relationships
+- Environment-based database configuration
+- Database transactions for checkout operations
+
+---
+
+## 🧪 Testing
+
+The project includes automated API tests covering important authentication, authorization, and order-related scenarios.
+
+Current test result:
+
+```text
+Ran 4 tests
+OK
+
+🏗️ Backend Architecture
+Client
+   │
+   ▼
+Django REST Framework APIs
+   │
+   ▼
+Authentication & Permissions
+   │
+   ▼
+Serializers
+   │
+   ▼
+Django ORM
+   │
+   ▼
+PostgreSQL
+
+Payment Architecture
+Client
+   │
+   │ Checkout Request
+   ▼
+Django Backend
+   │
+   ├── Validate Cart
+   ├── Validate Stock
+   ├── Create ShopHub Order
+   ├── Create Order Items
+   └── Create Razorpay Order
+           │
+           ▼
+       Razorpay
+           │
+           │ Payment
+           ▼
+        Client
+           │
+           │ Payment Response
+           ▼
+   Payment Verification API
+           │
+           ▼
+   Verify Razorpay Signature
+           │
+           ▼
+   Payment Status = Completed
+           │
+           ▼
+   Order Status = Confirmed
+           │
+           ├── Reduce Stock
+           │
+           └── Clear Cart
+
+Application Flow 
+User Registration
+       ↓
+User Login
+       ↓
+JWT Access Token
+       ↓
+Browse Products
+       ↓
+Search / Filter / Pagination
+       ↓
+Add Product to Cart
+       ↓
+Manage Cart
+       ↓
+Add Products to Wishlist
+       ↓
+Create Address
+       ↓
+Checkout
+       ↓
+Stock Validation
+       ↓
+Create Order
+       ↓
+Create Razorpay Order
+       ↓
+Razorpay Checkout
+       ↓
+Complete Payment
+       ↓
+Verify Razorpay Signature
+       ↓
+Payment Completed
+       ↓
+Order Confirmed
+       ↓
+Inventory Updated
+       ↓
+Cart Cleared
+
+🛠️ Tech Stack
+Technology	                       Purpose
+Python	                         Backend programming
+Django	                         Web framework
+Django REST Framework	         REST API development
+PostgreSQL	                     Relational database
+JWT / SimpleJWT	                 Authentication
+Razorpay	                     Payment gateway
+django-cors-headers	             CORS handling
+Postman	                         API testing
+Gunicorn	                     Application server
+WhiteNoise	                     Static file serving
+Render	                         Deployment
+Git	                             Version control
+GitHub                         	 Source code hosting
+
+🏗️ Project Structure
 ShopHub/
-
 │
-
 ├── accounts/
-
+│
 ├── addresses/
-
+│
 ├── cart/
-
+│
 ├── categories/
-
+│
 ├── orders/
-
+│
 ├── payments/
-
+│
 ├── products/
-
+│
 ├── wishlist/
-
 │
-
 ├── shophub/
-
 │   ├── settings.py
-
 │   ├── urls.py
-
 │   ├── wsgi.py
-
 │   └── asgi.py
-
 │
-
-├── category\_images/
-
-├── product\_images/
-
-├── payment.html
-
+├── templates/
+│   └── payment.html
+│
 ├── manage.py
-
 ├── requirements.txt
-
 ├── .gitignore
-
 └── README.md
 
-
-🔄 Application Flow
-
-User Registration
-
-&#x20;      ↓
-
-User Login
-
-&#x20;      ↓
-
-JWT Access Token
-
-&#x20;      ↓
-
-Browse Products
-
-&#x20;      ↓
-
-Filter / Paginate Products
-
-&#x20;      ↓
-
-Add Product to Cart
-
-&#x20;      ↓
-
-Manage Cart
-
-&#x20;      ↓
-
-Create Address
-
-&#x20;      ↓
-
-Checkout
-
-&#x20;      ↓
-
-Create Order
-
-&#x20;      ↓
-
-Create Razorpay Order
-
-&#x20;      ↓
-
-Razorpay Checkout
-
-&#x20;      ↓
-
-Complete Payment
-
-&#x20;      ↓
-
-Verify Razorpay Signature
-
-&#x20;      ↓
-
-Payment Completed
-
-&#x20;      ↓
-
-Order Confirmed
-
-💳Payment Flow
-
-Frontend
-
-&#x20;  │
-
-&#x20;  │ Checkout Request
-
-&#x20;  ▼
-
-Django Backend
-
-&#x20;  │
-
-&#x20;  ├── Create ShopHub Order
-
-&#x20;  └── Create Razorpay Order
-
-&#x20;          │
-
-&#x20;          ▼
-
-&#x20;      Razorpay
-
-&#x20;          │
-
-&#x20;          │ User Payment
-
-&#x20;          ▼
-
-&#x20;      Frontend
-
-&#x20;          │
-
-&#x20;          │ Payment Response
-
-&#x20;          ▼
-
-&#x20;  Payment Verification API
-
-&#x20;          │
-
-&#x20;          ▼
-
-&#x20;  Verify Razorpay Signature
-
-&#x20;          │
-
-&#x20;          ▼
-
-&#x20;  Payment Status = Completed
-
-&#x20;          │
-
-&#x20;          ▼
-
-&#x20;  Order Status = Confirmed
-
-\#Database:
-
-python manage.py makemigrations
-
-python manage.py migrate
-
-
-⚙️Installation \& Setup
-
-1\. Clone the repository
-
+⚙️ Installation & Setup
+1. Clone the repository
 git clone https://github.com/Jaswanthroyg/shophub.git
-
 cd shophub
-
-2\. Create a virtual environment
-
+2. Create a virtual environment
 Windows
 python -m venv venv
-venv\\Scripts\\Activate.ps1
-
+venv\Scripts\activate
 Linux / macOS
 python3 -m venv venv
 source venv/bin/activate
-
-3\. Install dependencies
+3. Install dependencies
 pip install -r requirements.txt
 🐘 PostgreSQL Configuration
 
-Create a PostgreSQL database:
-CREATE DATABASE backend\_journey;
-Configure your PostgreSQL credentials using environment variables.
+Create a PostgreSQL database and configure the database connection using environment variables.
 
-🔑Environment Variables
+Example:
+
+DB_NAME=your_database_name
+DB_USER=postgres
+DB_PASSWORD=your_postgresql_password
+DB_HOST=localhost
+DB_PORT=5432
+🔑 Environment Variables
 
 Create a .env file in the project root:
-SECRET\_KEY=your\_django\_secret\_key
+
+SECRET_KEY=your_django_secret_key
 
 DEBUG=True
 
-DB\_NAME=backend\_journey
+DB_NAME=your_database_name
+DB_USER=postgres
+DB_PASSWORD=your_postgresql_password
+DB_HOST=localhost
+DB_PORT=5432
 
-DB\_USER=postgres
+RAZORPAY_KEY_ID=your_razorpay_test_key_id
+RAZORPAY_KEY_SECRET=your_razorpay_test_key_secret
 
-DB\_PASSWORD=your\_postgresql\_password
+Never commit .env or real credentials to GitHub.
 
-DB\_HOST=localhost
+🗃️ Database Migrations
 
-DB\_PORT=5432
+Create migrations when models are changed:
 
-RAZORPAY\_KEY\_ID=your\_razorpay\_test\_key\_id
+python manage.py makemigrations
 
-RAZORPAY\_KEY\_SECRET=your\_razorpay\_test\_key\_secret
-
-🗃️ Run Database Migrations
+Apply migrations:
 
 python manage.py migrate
-
 ▶️ Run the Development Server
-
 python manage.py runserver
 
-Backend:
+Local backend:
 
 http://127.0.0.1:8000/
 
+Payment page:
 
-🔐Authentication
+http://127.0.0.1:8000/payment/
 
-ShopHub uses JWT authentication for protected APIs.
-After login, send the access token in the request header:
-Authorization: Bearer <access\_token>
+👨‍💻 Author
 
-📈 Future Improvements
-Possible future improvements:
-\-Automated unit and integration tests
-
-\-Docker containerization
-
-\-Production deployment
-
-\-CI/CD pipeline
-
-\-API documentation
-
-\-Order history and tracking
-
-\-Email notifications
-
-\-Redis caching
-
-\-Background task processing
-
-\-Production Razorpay configuration
-
-\-Dedicated production frontend
-
-🧠 Backend Concepts Implemented
-This project demonstrates:
-\-REST API development
-
-\-Django REST Framework
-
-\-JWT authentication
-
-\-Authentication \& permissions
-
-\-Serializers
-
-\-Django ORM
-
-\-PostgreSQL integration
-
-\-Database migrations
-
-\-CRUD operations
-
-\-Filtering
-
-\-Pagination
-
-\-User-specific data access
-
-\-Database transactions
-
-\-Payment gateway integration
-
-\-Payment signature verification
-
-\-Environment variable management
-
-\-Git \& GitHub version control
-
-
-👨‍💻 Author:
 Jaswanth Roy Gorre
+
 Backend Developer | Python | Django | Django REST Framework
-GitHub:
+
+GitHub
+
 https://github.com/Jaswanthroyg
 
 ⭐ ShopHub
-A complete E-Commerce backend project demonstrating practical backend development with Django REST Framework, PostgreSQL, JWT authentication, and Razorpay payment integration.
-\*\*One important point:\*\* don't put your actual `RAZORPAY\_KEY\_SECRET`, PostgreSQL password, JWT secret, or `.env` contents in this README. The placeholders are intentional.
 
+ShopHub is a backend-focused E-Commerce REST API demonstrating practical backend development with Django REST Framework, PostgreSQL, JWT authentication, role-based access control, inventory management, and Razorpay payment integration and deployed on Render.

@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
-
+from rest_framework.permissions import IsAdminUser,IsAuthenticated
 from .models import Product
 from django.db.models import Q
 from .serializers import ProductSerializer
@@ -10,7 +10,7 @@ from .pagination import ProductPagination
 
 
 class ProductCreateAPIView(APIView):
-
+    permission_classes = [IsAdminUser]
     def post(self, request):
 
         serializer = ProductSerializer(data=request.data)
@@ -71,6 +71,7 @@ class ProductDetailAPIView(APIView):
 
     
 class ProductUpdateAPIView(APIView):
+    permission_classes = [IsAdminUser]
     def put(self,request,id):
         product=get_object_or_404(Product,id=id)
         serializer=ProductSerializer(product,data=request.data)
@@ -80,6 +81,7 @@ class ProductUpdateAPIView(APIView):
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     
 class ProductDeleteAPIVIew(APIView):
+    permission_classes = [IsAdminUser]
     def delete(self,request,id):
         product=get_object_or_404(Product,id=id)
         product.delete()

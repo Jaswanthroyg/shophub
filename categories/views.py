@@ -2,11 +2,16 @@ from django. shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAdminUser
 
 from .serializers import CategorySerializer
 from .models import Category
 
 class CategoryAPIView(APIView):
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [IsAdminUser()]
+        return []
 
     def get(self, request):
 
@@ -36,6 +41,10 @@ class CategoryAPIView(APIView):
             status=status.HTTP_400_BAD_REQUEST
         )
 class CategoryDetailAPIView(APIView):
+    def get_permissions(self):
+        if self.request.method in ["PUT", "DELETE"]:
+            return [IsAdminUser()]
+        return []
     def get(self,request,id):
         category=get_object_or_404(Category,id=id)
         serializer=CategorySerializer(category)
